@@ -1,5 +1,4 @@
 # Lighthall SESL 2 Level 2 Assignment
-# Portfolio Calculator
 
 ## Requirements
 As a User I want a web application where I can enter the state of my assets portfolio at some day in the past and see how much money would be worth today.
