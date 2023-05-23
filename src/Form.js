@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Form = () => {
   const [startDate, setStartDate] = useState('')
@@ -52,13 +54,7 @@ const Form = () => {
   const handleStockChange = (index, key, value) => {
     const updatedStocks = [...stocks]
     updatedStocks[index][key] = value
-
-    if (value.length > 5) {
-      updatedStocks[index].isInvalid = true
-    } else {
-      updatedStocks[index].isInvalid = false
-    }
-
+    
     setStocks(updatedStocks)
   }
 
@@ -105,89 +101,103 @@ const Form = () => {
   }
 
   return (
-    <div>
+    <div className="form-container" style={{ marginBottom: '90px' }}>
       <form
         onSubmit={handleSubmit}
-        className="max-w-md mx-auto p-6 mt-20 bg-white shadow-lg rounded-lg">
-        <label className="block mb-4">
-          <span className="text-gray-700">Start Date:</span>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-          />
-        </label>
-
-        <label className="block mb-4">
-          <span className="text-gray-700">Initial Balance:</span>
-          <input
-            type="number"
-            value={initialBalance}
-            onChange={(e) => setInitialBalance(e.target.value)}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-          />
-        </label>
-
-        {stocks.map((stock, index) => (
-          <div key={index} className="mb-4">
-            <label className="block mb-2">
-              <span className="text-gray-700">Stock Symbol:</span>
-              <div className="relative mt-1 rounded-md shadow-sm">
-                <input
-                  type="text"
-                  value={stock.symbol}
-                  onChange={(e) =>
-                    handleStockChange(index, 'symbol', e.target.value)
-                  }
-                  required
-                  className={`block w-full pr-10 border-gray-300 rounded-md focus:border-blue-300 focus:ring ${
-                    stock.isInvalid ? 'border-red-500' : ''
-                  }`}
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <span
-                    className={`text-sm ${
-                      stock.isInvalid ? 'text-red-500' : 'text-gray-500'
-                    }`}>
-                    {stock.symbol.length}/5
-                  </span>
-                </div>
-              </div>
-            </label>
-
-            {stock.isInvalid && (
-              <p className="text-red-500 text-sm mt-1">
-                Stock symbol exceeds the maximum character limit of 5.
-              </p>
-            )}
-
-            <label className="block mb-2">
-              <span className="text-gray-700">Allocation (%):</span>
+        className="max-w-4xl mx-auto p-6 mt-20 bg-white shadow-lg rounded-lg border-2 border-black">
+        <div className="flex space-x-4 mb-4">
+          <div className="w-1/2">
+            <label className="block">
+              <span className="text-gray-700">Start Date:</span>
               <input
-                type="number"
-                value={stock.allocation}
-                onChange={(e) =>
-                  handleStockChange(index, 'allocation', e.target.value)
-                }
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
+                className="mt-1 pl-2 block w-full h-10 rounded-md border-black border border-solid border-1 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
               />
             </label>
-
-            {index > 0 && (
-              <button
-                type="button"
-                onClick={() => removeStock(index)}
-                className="text-red-500 hover:text-red-700 focus:outline-none">
-                Remove Stock
-              </button>
-            )}
           </div>
-        ))}
+          <div className="w-1/2">
+            <label className="block">
+              <span className="text-gray-700">Initial Balance:</span>
+              <input
+                type="number"
+                value={initialBalance}
+                onChange={(e) => setInitialBalance(e.target.value)}
+                required
+                className="mt-1 pl-2 block w-full h-10 rounded-md border-black border border-solid border-1 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
+              />
+            </label>
+          </div>
+        </div>
 
+        
+        {stocks.map((stock, index) => (
+            <div className="flex justify-center items-center">
+              <div className="stock-group relative" style={{ marginBottom: '10px' }}>
+              <div key={index} className="mb-4 flex flex-wrap">
+                <div className="mr-4">
+                  <label className="block mb-2">
+                    <span className="text-gray-700">Stock Symbol:</span>
+                    <div className="relative mt-1 rounded-md shadow-sm">
+                      <input
+                        type="text"
+                        value={stock.symbol}
+                        onChange={(e) =>
+                          handleStockChange(index, 'symbol', e.target.value.slice(0, 5))
+                        }
+                        required
+                        className={`mt-1 pl-2 block w-full rounded-md border-black border border-solid border-1 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200`}
+                      />
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span
+                          className={`text-sm 'text-gray-700'`}
+                        >
+                          {stock.symbol.length}/5
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block mb-2">
+                    <span className="text-gray-700">Allocation (%):</span>
+                    <input
+                      type="number"
+                      value={stock.allocation}
+                      onChange={(e) => {
+                        const value = Math.min(Number(e.target.value), 100);
+                        handleStockChange(index, 'allocation', value.toString());
+                      }}
+                      required
+                      className="mt-1 pl-2 block w-full rounded-md border-black border border-solid border-1 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
+                    />
+                  </label>
+                </div>
+
+
+                {index > 0 && (
+                  <div className="w-full">
+                    <div className="absolute top-2 right-2">
+                      <button
+                        type="button"
+                        onClick={() => removeStock(index)}
+                        className="text-red-500 hover:text-red-700 focus:outline-none flex items-center"
+                        style={{ paddingLeft: '5px' }} 
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              </div>
+            </div>
+          ))}
+
+        <br></br>
         <button
           type="button"
           onClick={addStock}
