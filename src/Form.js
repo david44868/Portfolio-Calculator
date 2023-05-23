@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import Chart from './Chart.js';
 
 const Form = () => {
   const [startDate, setStartDate] = useState('')
@@ -73,7 +74,7 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = 'acaeb000f6cf60cdc2078aaa90a00b1d'
+    const apiKey = 'cc0af1786011e09b90ff3c0b4a06e751'
     const symbols = stocks.map((stock) => stock.symbol)
     const endDate = new Date().toISOString().slice(0, 10)
 
@@ -226,6 +227,13 @@ const Form = () => {
 
         {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
       </form>
+        <Chart 
+          startDate={startDate}
+          stocks={stocks}
+          historicalData={historicalData}
+          initialBalance={initialBalance}
+          currentValue={calculateCurrentValue()}
+        />
     </div>
   )
 }
