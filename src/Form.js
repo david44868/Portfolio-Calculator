@@ -52,13 +52,13 @@ const Form = () => {
   const handleStockChange = (index, key, value) => {
     const updatedStocks = [...stocks]
     updatedStocks[index][key] = value
-  
+
     if (value.length > 5) {
       updatedStocks[index].isInvalid = true
     } else {
       updatedStocks[index].isInvalid = false
     }
-  
+
     setStocks(updatedStocks)
   }
 
@@ -132,35 +132,37 @@ const Form = () => {
         </label>
 
         {stocks.map((stock, index) => (
-  <div key={index} className="mb-4">
-    <label className="block mb-2">
-      <span className="text-gray-700">Stock Symbol:</span>
-      <div className="relative mt-1 rounded-md shadow-sm">
-        <input
-          type="text"
-          value={stock.symbol}
-          onChange={(e) => handleStockChange(index, 'symbol', e.target.value)}
-          required
-          className={`block w-full pr-10 border-gray-300 rounded-md focus:border-blue-300 focus:ring ${
-            stock.isInvalid ? 'border-red-500' : ''
-          }`}
-        />
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-          <span
-            className={`text-sm ${
-              stock.isInvalid ? 'text-red-500' : 'text-gray-500'
-            }`}>
-            {stock.symbol.length}/5
-          </span>
-        </div>
-      </div>
-    </label>
+          <div key={index} className="mb-4">
+            <label className="block mb-2">
+              <span className="text-gray-700">Stock Symbol:</span>
+              <div className="relative mt-1 rounded-md shadow-sm">
+                <input
+                  type="text"
+                  value={stock.symbol}
+                  onChange={(e) =>
+                    handleStockChange(index, 'symbol', e.target.value)
+                  }
+                  required
+                  className={`block w-full pr-10 border-gray-300 rounded-md focus:border-blue-300 focus:ring ${
+                    stock.isInvalid ? 'border-red-500' : ''
+                  }`}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span
+                    className={`text-sm ${
+                      stock.isInvalid ? 'text-red-500' : 'text-gray-500'
+                    }`}>
+                    {stock.symbol.length}/5
+                  </span>
+                </div>
+              </div>
+            </label>
 
-    {stock.isInvalid && (
-      <p className="text-red-500 text-sm mt-1">
-        Stock symbol exceeds the maximum character limit of 5.
-      </p>
-    )}
+            {stock.isInvalid && (
+              <p className="text-red-500 text-sm mt-1">
+                Stock symbol exceeds the maximum character limit of 5.
+              </p>
+            )}
 
             <label className="block mb-2">
               <span className="text-gray-700">Allocation (%):</span>
