@@ -73,7 +73,7 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = 'acaeb000f6cf60cdc2078aaa90a00b1d'
+    const apiKey = '2687b93371259937786048b11fdd5c3f'
     const symbols = stocks.map((stock) => stock.symbol)
     const endDate = new Date().toISOString().slice(0, 10)
 
@@ -83,11 +83,11 @@ const Form = () => {
         symbols: symbols.join(','),
         date_from: startDate,
         date_to: endDate,
-        limit: 1,
       },
     })
 
     const { data } = response.data
+    console.log(response.data)
     setHistoricalData(data)
   }
 
