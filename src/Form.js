@@ -6,6 +6,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 const Form = () => {
   const [startDate, setStartDate] = useState('')
   const [initialBalance, setInitialBalance] = useState('')
+  const [newBalance, setNewBalance] = useState(0)
   const [stocks, setStocks] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
   const [historicalData, setHistoricalData] = useState([])
@@ -69,36 +70,51 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = '2687b93371259937786048b11fdd5c3f'
-    const symbols = stocks.map((stock) => stock.symbol)
-    const endDate = new Date().toISOString().slice(0, 10)
+    // const apiKey = '2687b93371259937786048b11fdd5c3f'
+    // const symbols = stocks.map((stock) => stock.symbol)
+    // const endDate = new Date().toISOString().slice(0, 10)
 
-    const response = await axios.get('http://api.marketstack.com/v1/eod', {
-      params: {
-        access_key: apiKey,
-        symbols: symbols.join(','),
-        date_from: startDate,
-        date_to: endDate,
-      },
+    // const response = await axios.get('http://api.marketstack.com/v1/eod', {
+    //   params: {
+    //     access_key: apiKey,
+    //     symbols: symbols.join(','),
+    //     date_from: startDate,
+    //     date_to: endDate,
+    //   },
+    // })
+
+    // const { data } = response.data
+    // console.log(response.data)
+    // axios.post("https://api.twelvedata.com/stocks", {
+    //   params: {
+    //     symbol
+    //   }
+    // })
+
+
+    setHistoricalData("Test")
+    axios.post('http://127.0.0.1:5000/get_stocks', { stocks: stocks, startDate: startDate, endDate: new Date().toISOString().slice(0, 10), balance: initialBalance })
+    .then(response => {
+      console.log(response)
+      setNewBalance(response.data)
     })
-
-    const { data } = response.data
-    console.log(response.data)
-    setHistoricalData(data)
+    .catch(error => {
+      console.log(error)
+    });
   }
 
-  const calculateCurrentValue = () => {
-    const totalValue = historicalData.reduce((total, item) => {
-      const matchingStock = stocks.find((stock) => stock.symbol === item.symbol)
-      const allocation = matchingStock
-        ? parseFloat(matchingStock.allocation)
-        : 0
-      const stockValue =
-        (allocation / 100) * initialBalance * (item.close / item.open)
-      return total + stockValue
-    }, 0)
-    return totalValue.toFixed(2)
-  }
+  // const calculateCurrentValue = () => {
+  //   const totalValue = historicalData.reduce((total, item) => {
+  //     const matchingStock = stocks.find((stock) => stock.symbol === item.symbol)
+  //     const allocation = matchingStock
+  //       ? parseFloat(matchingStock.allocation)
+  //       : 0
+  //     const stockValue =
+  //       (allocation / 100) * initialBalance * (item.close / item.open)
+  //     return total + stockValue
+  //   }, 0)
+  //   return totalValue.toFixed(2)
+  // }
 
   return (
     <div className="form-container" style={{ marginBottom: '90px' }}>
@@ -228,7 +244,7 @@ const Form = () => {
                     </li>
                   ))}
                 </ul>
-                <p>Current Portfolio Value: ${calculateCurrentValue()}</p>
+                <p>Current Portfolio Value: <span className='font-bold'>${newBalance}</span></p>
               </div>
             )}
           </>
