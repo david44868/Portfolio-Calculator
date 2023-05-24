@@ -69,8 +69,9 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = '2687b93371259937786048b11fdd5c3f'
+    const apiKey = '70808f70d8d164e4e9e5a6b120a7a93a'
     const symbols = stocks.map((stock) => stock.symbol)
+    console.log(symbols.join(','))
     const endDate = new Date().toISOString().slice(0, 10)
 
     const response = await axios.get('http://api.marketstack.com/v1/eod', {
@@ -84,6 +85,8 @@ const Form = () => {
 
     const { data } = response.data
     console.log(response.data)
+    console.log("HERE")
+    console.log("HERE ", data[0].close)
     setHistoricalData(data)
   }
 
