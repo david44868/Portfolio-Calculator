@@ -96,7 +96,10 @@ const Form = () => {
     axios.post('http://127.0.0.1:5000/get_stocks', { stocks: stocks, startDate: startDate, endDate: new Date().toISOString().slice(0, 10), balance: initialBalance })
     .then(response => {
       console.log(response)
-      //setNewBalance(response.data)
+      if(response.data.value)
+        setNewBalance(response.data.value)
+      else
+        setNewBalance(response.data)
     })
     .catch(error => {
       console.log(error)

@@ -22,7 +22,12 @@ def get_stocks():
         if current["status"] == "ok":
             for date in current["values"]:
                 values.append({date["datetime"] : date["close"]})
+            old = current["values"][-1]["close"]
+            new = current["values"][0]["close"]
+            quantity = (float(allocation) / 100 * float(balance)) / float(new)
+            new_value = quantity * float(old)
             dict[(stock["symbol"])] = values
+            dict["value"] = round(new_value, 2)
         elif current["code"] == 400:
             return "Not a valid stock."
         else:
