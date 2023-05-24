@@ -70,38 +70,39 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = '0b4ef06902b707f0a42d597674632f55'
-    const symbols = stocks.map((stock) => stock.symbol)
-    console.log(symbols.join(','))
-    const endDate = new Date().toISOString().slice(0, 10)
-
-    const response = await axios.get('http://api.marketstack.com/v1/eod', {
-      params: {
-        access_key: apiKey,
-        symbols: symbols.join(','),
-        date_from: startDate,
-        date_to: endDate,
-      },
-    })
-
+    const apiKey = 'c1c90916f5f94045af23169f5d25efd0'; // Replace with your Twelve Data API key
+    const symbols = stocks.map((stock) => stock.symbol);
+    const endDate = new Date().toISOString().slice(0, 10);
+    
+    const response = await axios.get(
+      'https://api.twelvedata.com/time_series',
+      {
+        params: {
+          symbol: symbols.join(','),
+          interval: '1day',
+          start_date: startDate,
+          end_date: endDate,
+          apikey: apiKey,
+        },
+      }
+    );
+      console.log(response.data)
     const historicalData = {};
 
-    response.data.data.forEach((item) => {
-      if (!historicalData[item.symbol]) {
-        historicalData[item.symbol] = [];
+    for (const symbol in response.data) {
+      if (symbol !== 'status' && symbol !== 'meta') {
+        const closeValues = response.data[symbol].values.map(
+          (item) => parseFloat(item.close)
+        );
+        historicalData[symbol] = closeValues;
       }
-      historicalData[item.symbol].unshift(item.close);
-    });
-
-    // Sort the historical data by date in descending order
-    for (const symbol in historicalData) {
-      historicalData[symbol] = historicalData[symbol].reverse();
     }
 
     console.log(historicalData);
     console.log(stocks)
     setHistoricalData(historicalData);
-  }
+  };
+  
 
   const calculateCurrentValue = () => {
     var total = 0
