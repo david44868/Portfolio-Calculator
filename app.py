@@ -33,7 +33,7 @@ def get_stocks():
             return "Not a valid stock."
         else:
             return "API limit reached. Please wait a minute."
-    dict["value"] = round(total, 2)
+    dict["value"] = "{:.2f}".format(total)
     return dict
 
 @app.route('/')
