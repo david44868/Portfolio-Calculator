@@ -90,11 +90,18 @@ const Form = () => {
     const historicalData = {};
 
     for (const symbol in response.data) {
-      if (symbol !== 'status' && symbol !== 'meta') {
+      if (symbol !== 'status' && symbol !== 'meta' && symbol !== 'values') {
         const closeValues = response.data[symbol].values.map(
           (item) => parseFloat(item.close)
         );
         historicalData[symbol] = closeValues;
+      }
+      else if(symbol === 'values')
+      {
+        const sym = response.data.meta.symbol;
+        const closeValues = response.data.values.map((item) => parseFloat(item.close));
+        historicalData[sym] = closeValues;
+        console.log(sym, historicalData[sym])
       }
     }
 
