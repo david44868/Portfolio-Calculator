@@ -6,7 +6,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 const Form = () => {
   const [startDate, setStartDate] = useState('')
   const [initialBalance, setInitialBalance] = useState('')
-  const [newBalance, setNewBalance] = useState(0)
+  //const [newBalance, setNewBalance] = useState(0)
   const [stocks, setStocks] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
   const [historicalData, setHistoricalData] = useState([])
