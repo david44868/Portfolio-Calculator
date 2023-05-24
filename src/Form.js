@@ -75,32 +75,13 @@ const Form = () => {
     console.log(symbols.join(','))
     const endDate = new Date().toISOString().slice(0, 10)
 
-    // const response = await axios.get('http://api.marketstack.com/v1/eod', {
-    //   params: {
-    //     access_key: apiKey,
-    //     symbols: symbols.join(','),
-    //     date_from: startDate,
-    //     date_to: endDate,
-    //   },
-    // })
-
-    // const { data } = response.data
-    // console.log(response.data)
-    // axios.post("https://api.twelvedata.com/stocks", {
-    //   params: {
-    //     symbol
-    //   }
-    // })
-
-
-    setHistoricalData("Test")
-    axios.post('http://127.0.0.1:5000/get_stocks', { stocks: stocks, startDate: startDate, endDate: new Date().toISOString().slice(0, 10), balance: initialBalance })
-    .then(response => {
-      console.log(response)
-      if(response.data.value)
-        setNewBalance(response.data.value)
-      else
-        setNewBalance(response.data)
+    const response = await axios.get('http://api.marketstack.com/v1/eod', {
+      params: {
+        access_key: apiKey,
+        symbols: symbols.join(','),
+        date_from: startDate,
+        date_to: endDate,
+      },
     })
 
     const historicalData = {};
@@ -137,9 +118,15 @@ const Form = () => {
     return total.toFixed(2);
   };
   
-  
-  
-  
+  // setHistoricalData("Test")
+  //   axios.post('http://127.0.0.1:5000/get_stocks', { stocks: stocks, startDate: startDate, endDate: new Date().toISOString().slice(0, 10), balance: initialBalance })
+  //   .then(response => {
+  //     console.log(response)
+  //     if(response.data.value)
+  //       setNewBalance(response.data.value)
+  //     else
+  //       setNewBalance(response.data)
+  //   })
 
   return (
     <div className="form-container" style={{ marginBottom: '90px' }}>
@@ -269,7 +256,7 @@ const Form = () => {
                     </li>
                   ))}
                 </ul>
-                <p>Current Portfolio Value: <span className='font-bold'>${newBalance}</span></p>
+                <p>Current Portfolio Value: ${calculateCurrentValue()}</p>
               </div>
             )}
           </>
