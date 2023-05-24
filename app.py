@@ -8,6 +8,7 @@ CORS(app)
 @app.route('/get_stocks', methods=['POST'])
 def get_stocks():
     api_key = "819d185bea314c1da292d780b598ca5f"
+    total = 0
     start_date = request.json['startDate']
     end_date = request.json['endDate']
     balance = request.json["balance"]
@@ -24,14 +25,15 @@ def get_stocks():
                 values.append({date["datetime"] : date["close"]})
             old = current["values"][-1]["close"]
             new = current["values"][0]["close"]
-            quantity = (float(allocation) / 100 * float(balance)) / float(new)
-            new_value = quantity * float(old)
+            quantity = (float(allocation) / 100 * float(balance)) / float(old)
+            new_value = quantity * float(new)
+            total += new_value
             dict[(stock["symbol"])] = values
-            dict["value"] = round(new_value, 2)
         elif current["code"] == 400:
             return "Not a valid stock."
         else:
             return "API limit reached. Please wait a minute."
+    dict["value"] = round(total, 2)
     return dict
 
 @app.route('/')
