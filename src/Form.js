@@ -59,7 +59,7 @@ const Form = () => {
   }
 
   const addStock = () => {
-    setStocks([...stocks, { symbol: '', allocation: '' }])
+    setStocks([...stocks, { symbol: '', allocation: '', num: 0 }])
   }
 
   const removeStock = (index) => {
@@ -69,7 +69,7 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = '70808f70d8d164e4e9e5a6b120a7a93a'
+    const apiKey = '0b4ef06902b707f0a42d597674632f55'
     const symbols = stocks.map((stock) => stock.symbol)
     console.log(symbols.join(','))
     const endDate = new Date().toISOString().slice(0, 10)
@@ -83,25 +83,43 @@ const Form = () => {
       },
     })
 
-    const { data } = response.data
-    console.log(response.data)
-    console.log("HERE")
-    console.log("HERE ", data[0].close)
-    setHistoricalData(data)
+    const historicalData = {};
+
+    response.data.data.forEach((item) => {
+      if (!historicalData[item.symbol]) {
+        historicalData[item.symbol] = [];
+      }
+      historicalData[item.symbol].unshift(item.close);
+    });
+
+    // Sort the historical data by date in descending order
+    for (const symbol in historicalData) {
+      historicalData[symbol] = historicalData[symbol].reverse();
+    }
+
+    console.log(historicalData);
+    console.log(stocks)
+    setHistoricalData(historicalData);
   }
 
   const calculateCurrentValue = () => {
-    const totalValue = historicalData.reduce((total, item) => {
-      const matchingStock = stocks.find((stock) => stock.symbol === item.symbol)
-      const allocation = matchingStock
-        ? parseFloat(matchingStock.allocation)
-        : 0
-      const stockValue =
-        (allocation / 100) * initialBalance * (item.close / item.open)
-      return total + stockValue
-    }, 0)
-    return totalValue.toFixed(2)
-  }
+    var total = 0
+    for (const key in historicalData) {
+      const stockData = historicalData[key];
+      const boughtDate = stockData[stockData.length - 1]
+      const latestDate = stockData[0]
+      const allocation = stocks.find((stock) => stock.symbol === key)?.allocation;
+      const stockValue = latestDate * (allocation / 100) * initialBalance / boughtDate;
+
+      total += stockValue
+    }
+  
+    return total.toFixed(2);
+  };
+  
+  
+  
+  
 
   return (
     <div className="form-container" style={{ marginBottom: '90px' }}>
@@ -218,7 +236,7 @@ const Form = () => {
           <p>Loading...</p>
         ) : (
           <>
-            {historicalData.length > 0 && (
+            {Object.keys(historicalData).length > 0 && (
               <div className="mt-4">
                 <h2 className="text-xl font-semibold mb-2">Results</h2>
                 <p>Start Date: {startDate}</p>
