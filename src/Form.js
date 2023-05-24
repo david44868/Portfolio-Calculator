@@ -3,6 +3,7 @@ import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import Chart from './Chart.js';
+import Modal from './Modal.js'
 
 const Form = () => {
   const [startDate, setStartDate] = useState('')
@@ -11,6 +12,7 @@ const Form = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [historicalData, setHistoricalData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -89,8 +91,9 @@ const Form = () => {
         limit: 1,
       },
     })
-
+    
     const { data } = response.data
+    console.log(data)
     setHistoricalData(data)
   }
 
@@ -200,9 +203,21 @@ const Form = () => {
 
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none">
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
+          onClick={() => setIsOpen(true)}>
           Calculate
         </button>
+        <Modal open={isOpen} onClose={()=>setIsOpen(false)}>
+          <Chart 
+            startDate={startDate}
+            stocks={stocks}
+            historicalData={historicalData}
+            initialBalance={initialBalance}
+            currentValue={calculateCurrentValue()}
+          />
+        </Modal>
+
+
 
         {isLoading ? (
           <p>Loading...</p>
@@ -229,13 +244,6 @@ const Form = () => {
 
         {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
       </form>
-        <Chart 
-          startDate={startDate}
-          stocks={stocks}
-          historicalData={historicalData}
-          initialBalance={initialBalance}
-          currentValue={calculateCurrentValue()}
-        />
     </div>
   )
 }

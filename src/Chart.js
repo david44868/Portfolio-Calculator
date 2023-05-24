@@ -28,7 +28,7 @@ const Chart = (props) => {
   }
 
   return (
-    <div className="h-[500px] w-[700px] my-16 mx-auto block">
+    <div className="h-[500px] w-[700px] my-5 mx-auto block py-5 bg-white rounded-lg">
       <h3>
         Current Portfolio Value: {' '} 
         {currentValue - initialBalance >= 0 ? (
@@ -61,7 +61,7 @@ const Chart = (props) => {
         // tooltip={({ point }) => {
         //   return <div>{point.x}</div>;
         // }}
-        margin={{ top: 50, right: 90, bottom: 50, left: 100 }}
+        margin={{ top: 50, right: 90, bottom: 120, left: 100 }}
         xScale={{ type: "point" }}
         yScale={{
           type: "linear",
