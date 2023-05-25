@@ -102,7 +102,7 @@ const Form = () => {
       if (response.data[stockData].code == 400 && response.data[stockData].message.match(/^\*\*symbol\*\*\ not\ found/)
       ){
       // console.log(response.data[stockData].message)
-      setErrorMessage("An entered stock ticker cannot be found. Please enter valid stock tickers.")
+      setErrorMessage(`${stockData} is not a valid stock ticker. Please enter a valid stock ticker.`)
       return
     }
     }
