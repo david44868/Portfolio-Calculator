@@ -22,7 +22,7 @@ const Form = () => {
     try {
       setIsLoading(true)
       await fetchHistoricalData()
-      setErrorMessage('')
+      // setErrorMessage('')
     } catch (error) {
       setErrorMessage('Failed to fetch historical data. Please try again.')
     } finally {
@@ -86,7 +86,28 @@ const Form = () => {
         },
       }
     );
-      console.log(response.data)
+    
+    // console.log(Object.keys(response.data).length)
+    // console.log(response.data[0])
+
+    // if the stock ticker isnt a valid one: when only one stock ticker is entered
+    if (response.data.code == 400 && response.data.message.match(/^\*\*symbol\*\*\ not\ found/)
+      ){
+      // console.log(response.data.message)
+      setErrorMessage("The entered stock ticker(s) cannot be found. Please enter a valid stock ticker.")
+      return
+    }
+    // if the stock ticker isnt a valid one: when multiple stock tickers are entered
+    for (const stockData in response.data){
+      if (response.data[stockData].code == 400 && response.data[stockData].message.match(/^\*\*symbol\*\*\ not\ found/)
+      ){
+      // console.log(response.data[stockData].message)
+      setErrorMessage("An entered stock ticker cannot be found. Please enter valid stock tickers.")
+      return
+    }
+    }
+
+
     const historicalData = {};
 
     for (const symbol in response.data) {
@@ -101,13 +122,14 @@ const Form = () => {
         const sym = response.data.meta.symbol;
         const closeValues = response.data.values.map((item) => parseFloat(item.close));
         historicalData[sym] = closeValues;
-        console.log(sym, historicalData[sym])
+        // console.log(sym, historicalData[sym])
       }
     }
 
-    console.log(historicalData);
-    console.log(stocks)
+    // console.log(historicalData);
+    // console.log(stocks)
     setHistoricalData(historicalData);
+    setErrorMessage('');
   };
   
 
@@ -242,7 +264,7 @@ const Form = () => {
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 mb-4 mr-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
+          className="px-4 py-2 mb-4 mr-4 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none"
         >
            Reset Data 
         </button>
@@ -262,6 +284,8 @@ const Form = () => {
 
         {isLoading ? (
           <p>Loading...</p>
+        ) : errorMessage ? (
+          <>{errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}</>
         ) : (
           <>
             {Object.keys(historicalData).length > 0 && (
@@ -281,9 +305,9 @@ const Form = () => {
               </div>
             )}
           </>
-        )}
+      )}
 
-        {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+        {/* {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>} */}
       </form>
     </div>
   )
