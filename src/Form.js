@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -12,8 +12,10 @@ const Form = () => {
   const [stocks, setStocks] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
   const [historicalData, setHistoricalData] = useState([])
+  const [stockPriceDates, setStockPriceDates] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  // const stockPriceDates = {}
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,6 +27,7 @@ const Form = () => {
     try {
       setIsLoading(true)
       await fetchHistoricalData()
+      setIsOpen(true)
       setErrorMessage('')
     } catch (error) {
       setErrorMessage('Failed to fetch historical data. Please try again.')
@@ -34,6 +37,8 @@ const Form = () => {
   }
 
   const isValidInputs = () => {
+    console.log(stocks)
+
     if (!startDate) {
       setErrorMessage('Please enter a valid start date.')
       return false
@@ -41,6 +46,12 @@ const Form = () => {
 
     if (isNaN(initialBalance) || initialBalance <= 0) {
       setErrorMessage('Please enter a valid initial balance greater than 0.')
+      return false
+    }
+
+    if (!stocks) {
+      console.log("hi")
+      setErrorMessage('Please enter a valid ticker.')
       return false
     }
 
@@ -79,9 +90,11 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = 'c1c90916f5f94045af23169f5d25efd0'; // Replace with your Twelve Data API key
+    const apiKey = 'a5a6abfb51c5429da534cca299517fc9'; // Replace with your Twelve Data API key
     const symbols = stocks.map((stock) => stock.symbol);
     const endDate = new Date().toISOString().slice(0, 10);
+    // console.log(startDate)
+    // console.log(endDate)
     
     const response = await axios.get(
       'https://api.twelvedata.com/time_series',
@@ -95,7 +108,7 @@ const Form = () => {
         },
       }
     );
-      console.log(response.data)
+      // response from the above includes stock info, and stock price and dates
     const historicalData = {};
 
     for (const symbol in response.data) {
@@ -104,19 +117,25 @@ const Form = () => {
           (item) => parseFloat(item.close)
         );
         historicalData[symbol] = closeValues;
+
+        const dates = response.data[symbol].values.map((item) => item.datetime);
+        stockPriceDates[symbol] = dates;
       }
       else if(symbol === 'values')
       {
         const sym = response.data.meta.symbol;
         const closeValues = response.data.values.map((item) => parseFloat(item.close));
         historicalData[sym] = closeValues;
-        console.log(sym, historicalData[sym])
+
+        // parse dates from response and store them in allDates object 
+        // in the future, closeValues and allDates could be combined into one object using dates as key and stock price as values to ensure data integrity
+        const dates = response.data.values.map((item) => item.datetime);
+        stockPriceDates[sym] = dates
+        // console.log(stockPriceDates)
       }
     }
-
-    console.log(historicalData);
-    console.log(stocks)
     setHistoricalData(historicalData);
+    setStockPriceDates(stockPriceDates);
   };
   
 
@@ -148,6 +167,15 @@ const Form = () => {
   //     else
   //       setNewBalance(response.data)
   //   })
+
+  const openModal = () => {
+    if(isValidInputs() === true){
+      setIsOpen(true)
+    } else {
+      return null;
+    }
+  }
+
 
   return (
     <div>
@@ -253,43 +281,23 @@ const Form = () => {
         <button
           type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
-          onClick={() => setIsOpen(true)}>
+          >
           Calculate
         </button>
-        <Modal open={isOpen} onClose={()=>setIsOpen(false)}>
+
+        {isOpen ? (<Modal open={isOpen} onClose={()=>setIsOpen(false)}>
           <Chart 
-            startDate={startDate}
+            stockPriceDates={stockPriceDates}
             stocks={stocks}
             historicalData={historicalData}
             initialBalance={initialBalance}
-            currentValue={newBalance}
+            startDate={startDate}
+            calculateCurrentValue={calculateCurrentValue()}
+            // currentValue={newBalance}
           />
-        </Modal>
-
-
-
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <>
-            {Object.keys(historicalData).length > 0 && (
-              <div className="mt-4">
-                <h2 className="text-xl font-semibold mb-2">Results</h2>
-                <p>Start Date: {startDate}</p>
-                <p>Initial Balance: ${initialBalance}</p>
-                <p>Portfolio Allocation:</p>
-                <ul>
-                  {stocks.map((stock, index) => (
-                    <li key={index}>
-                      {stock.symbol}: {stock.allocation}%
-                    </li>
-                  ))}
-                </ul>
-                <p>Current Portfolio Value: ${calculateCurrentValue()}</p>
-              </div>
-            )}
-          </>
-        )}
+        </Modal>) : (<></>)}
+      
+        
 
         {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
       </form>
