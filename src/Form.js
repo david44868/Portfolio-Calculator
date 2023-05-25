@@ -2,15 +2,18 @@ import React, { useState } from 'react'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import Chart from './Chart.js';
+import Modal from './Modal.js'
 
 const Form = () => {
   const [startDate, setStartDate] = useState('')
   const [initialBalance, setInitialBalance] = useState('')
-  //const [newBalance, setNewBalance] = useState(0)
   const [stocks, setStocks] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
   const [historicalData, setHistoricalData] = useState([])
+  //const [portfolioData, setPortfolioData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,6 +25,7 @@ const Form = () => {
     try {
       setIsLoading(true)
       await fetchHistoricalData()
+      setIsOpen(true)
       setErrorMessage('')
     } catch (error) {
       setErrorMessage('Failed to fetch historical data. Please try again.')
@@ -70,7 +74,7 @@ const Form = () => {
   }
 
   const fetchHistoricalData = async () => {
-    const apiKey = 'c1c90916f5f94045af23169f5d25efd0'; // Replace with your Twelve Data API key
+    const apiKey = process.env.REACT_APP_API; // Replace with your Twelve Data API key
     const symbols = stocks.map((stock) => stock.symbol);
     const endDate = new Date().toISOString().slice(0, 10);
     
@@ -108,7 +112,31 @@ const Form = () => {
     console.log(historicalData);
     console.log(stocks)
     setHistoricalData(historicalData);
+    //calculatePortfolioValue()
+    //console.log("H", portfolioData)
   };
+  
+   
+  /*const calculatePortfolioValue = () => {
+    var portfolioDataTemp = []
+    const firstKey = Object.keys(historicalData)[0];
+    for (let i = 0; i < historicalData[firstKey].length; i++) 
+    {
+      var total = 0
+      for (const key in historicalData) {
+        const stockData = historicalData[key];
+        const boughtDate = stockData[stockData.length - 1]
+        const latestDate = stockData[i]
+        const allocation = stocks.find((stock) => stock.symbol === key)?.allocation;
+        const stockValue = latestDate * (allocation / 100) * initialBalance / boughtDate;
+
+        total += stockValue
+      }
+      console.log(total)
+      portfolioDataTemp.push(total.toFixed(2));
+    }
+    setPortfolioData(portfolioDataTemp)
+  };*/
   
 
   const calculateCurrentValue = () => {
@@ -124,6 +152,10 @@ const Form = () => {
     }
   
     return total.toFixed(2);
+  };
+
+  const handleClear = () => {
+    window.location.reload();
   };
   
   // setHistoricalData("Test")
@@ -204,8 +236,8 @@ const Form = () => {
                       type="number"
                       value={stock.allocation}
                       onChange={(e) => {
-                        const value = Math.min(Number(e.target.value), 100);
-                        handleStockChange(index, 'allocation', value.toString());
+                        //const value = Math.min(Number(e.target.value), 100);
+                        handleStockChange(index, 'allocation', e.target.value);
                       }}
                       required
                       className="mt-1 pl-2 block w-full rounded-md border-black border border-solid border-1 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
@@ -234,6 +266,15 @@ const Form = () => {
           ))}
 
         <br></br>
+
+        <button
+          type="button"
+          onClick={handleClear}
+          className="px-4 py-2 mb-4 mr-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
+        >
+           Reset Data 
+        </button>
+            
         <button
           type="button"
           onClick={addStock}
@@ -247,11 +288,26 @@ const Form = () => {
           Calculate
         </button>
 
+        {isOpen ? (
+          <Modal open={isOpen} onClose={()=>setIsOpen(false)}>
+          <Chart 
+            historicalData={historicalData}
+            calculateCurrentValue={calculateCurrentValue()}
+            stocks={stocks} 
+            initialBalance={initialBalance} 
+            startDate={startDate}
+            //portfolioData={portfolioData}
+          />
+        </Modal>
+        ) : (
+        <></>
+        )}
+
         {isLoading ? (
           <p>Loading...</p>
         ) : (
           <>
-            {Object.keys(historicalData).length > 0 && (
+            {/*Object.keys(historicalData).length > 0 && (
               <div className="mt-4">
                 <h2 className="text-xl font-semibold mb-2">Results</h2>
                 <p>Start Date: {startDate}</p>
@@ -266,7 +322,7 @@ const Form = () => {
                 </ul>
                 <p>Current Portfolio Value: ${calculateCurrentValue()}</p>
               </div>
-            )}
+                  )*/}
           </>
         )}
 
