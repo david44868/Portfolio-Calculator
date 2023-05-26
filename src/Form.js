@@ -25,12 +25,20 @@ const Form = () => {
     try {
       setIsLoading(true)
       await fetchHistoricalData()
-      setIsOpen(true)
-      setErrorMessage('')
     } catch (error) {
       setErrorMessage('Failed to fetch historical data. Please try again.')
     } finally {
       setIsLoading(false)
+    }
+
+    if(errorMessage === '')
+    {
+      setIsOpen(true)
+      setIsLoading(false)
+    }
+    else
+    {
+      setIsOpen(false)
     }
   }
 
@@ -75,7 +83,7 @@ const Form = () => {
 
   const fetchHistoricalData = async () => {
     const apiKey = process.env.REACT_APP_API; // Replace with your Twelve Data API key
-    const symbols = stocks.map((stock) => stock.symbol);
+    const symbols = stocks.map((stock) => stock.symbol.toUpperCase());
     const endDate = new Date().toISOString().slice(0, 10);
     
     const response = await axios.get(
@@ -90,7 +98,25 @@ const Form = () => {
         },
       }
     );
-      console.log(response.data)
+    // if the stock ticker isnt a valid one: when only one stock ticker is entered
+    if (response.data.code === 400 && response.data.message.match(/^\*\*symbol\*\* not found/))
+    {
+      // console.log(response.data.message)
+      setErrorMessage("The entered stock ticker(s) cannot be found. Please enter a valid stock ticker.")
+      return
+    }
+    // if the stock ticker isnt a valid one: when multiple stock tickers are entered
+    for (const stockData in response.data)
+    {
+      if (response.data[stockData].code === 400 && response.data[stockData].message.match(/^\*\*symbol\*\* not found/))
+      {
+        // console.log(response.data[stockData].message)
+        setErrorMessage(`${stockData} is not a valid stock ticker. Please enter a valid stock ticker.`)
+        return
+      }
+    }
+    
+    console.log(response.data)
     const historicalData = {};
 
     for (const symbol in response.data) {
@@ -112,6 +138,7 @@ const Form = () => {
     console.log(historicalData);
     console.log(stocks)
     setHistoricalData(historicalData);
+    setErrorMessage('')
     //calculatePortfolioValue()
     //console.log("H", portfolioData)
   };
@@ -145,9 +172,9 @@ const Form = () => {
       const stockData = historicalData[key];
       const boughtDate = stockData[stockData.length - 1]
       const latestDate = stockData[0]
-      const allocation = stocks.find((stock) => stock.symbol === key)?.allocation;
+      const allocation = stocks.find((stock) => stock.symbol.toUpperCase() === key.toUpperCase())?.allocation;
       const stockValue = latestDate * (allocation / 100) * initialBalance / boughtDate;
-
+      console.log(allocation)
       total += stockValue
     }
   
@@ -211,7 +238,7 @@ const Form = () => {
                     <div className="relative mt-1 rounded-md shadow-sm">
                       <input
                         type="text"
-                        value={stock.symbol}
+                        value={stock.symbol.toUpperCase()}
                         onChange={(e) =>
                           handleStockChange(index, 'symbol', e.target.value.slice(0, 5))
                         }
@@ -289,7 +316,7 @@ const Form = () => {
         </button>
 
         {isOpen ? (
-          <Modal open={isOpen} onClose={()=>setIsOpen(false)}>
+          <Modal open={isOpen && errorMessage===''} onClose={()=>setIsOpen(false)}>
           <Chart 
             historicalData={historicalData}
             calculateCurrentValue={calculateCurrentValue()}
