@@ -1,163 +1,188 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import Chart from './Chart.js';
-import Modal from './Modal.js'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import Chart from "./Chart.js";
+import Modal from "./Modal.js";
 
 const Form = () => {
-  const [startDate, setStartDate] = useState('')
-  const [initialBalance, setInitialBalance] = useState('')
+  const [startDate, setStartDate] = useState("");
+  const [initialBalance, setInitialBalance] = useState("");
   //const [newBalance, setNewBalance] = useState(0)
-  const [stocks, setStocks] = useState([])
-  const [errorMessage, setErrorMessage] = useState('')
-  const [historicalData, setHistoricalData] = useState([])
-  const [stockPriceDates, setStockPriceDates] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
+  const [stocks, setStocks] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [historicalData, setHistoricalData] = useState([]);
+  const [stockPriceDates, setStockPriceDates] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   // const stockPriceDates = {}
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!isValidInputs()) {
-      return
+      return;
     }
 
     try {
-      setIsLoading(true)
-      await fetchHistoricalData()
-      setIsOpen(true)
-      setErrorMessage('')
+      setIsLoading(true);
+      await fetchHistoricalData();
+      setIsOpen(true);
+      // setErrorMessage('')
     } catch (error) {
-      setErrorMessage('Failed to fetch historical data. Please try again.')
+      setErrorMessage("Failed to fetch historical data. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const isValidInputs = () => {
-    console.log(stocks)
+    // console.log(stocks);
 
     if (!startDate) {
-      setErrorMessage('Please enter a valid start date.')
-      return false
+      setErrorMessage("Please enter a valid start date.");
+      return false;
     }
 
     if (isNaN(initialBalance) || initialBalance <= 0) {
-      setErrorMessage('Please enter a valid initial balance greater than 0.')
-      return false
+      setErrorMessage("Please enter a valid initial balance greater than 0.");
+      return false;
     }
 
-    if (!stocks) {
-      console.log("hi")
-      setErrorMessage('Please enter a valid ticker.')
-      return false
-    }
+    // if (!stocks) {
+    //   setErrorMessage('Please enter a valid ticker.')
+    //   return false
+    // }
 
     const totalAllocation = stocks.reduce(
       (total, stock) => total + parseFloat(stock.allocation),
       0
-    )
+    );
     if (totalAllocation !== 100) {
-      setErrorMessage('The total allocation percentage should be 100%.')
-      return false
+      setErrorMessage("The total allocation percentage should be 100%.");
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleStockChange = (index, key, value) => {
-    const updatedStocks = [...stocks]
-    updatedStocks[index][key] = value
+    const updatedStocks = [...stocks];
+    updatedStocks[index][key] = value;
 
     if (value.length > 5) {
-      updatedStocks[index].isInvalid = true
+      updatedStocks[index].isInvalid = true;
     } else {
-      updatedStocks[index].isInvalid = false
+      updatedStocks[index].isInvalid = false;
     }
 
-    setStocks(updatedStocks)
-  }
+    setStocks(updatedStocks);
+  };
 
   const addStock = () => {
-    setStocks([...stocks, { symbol: '', allocation: '', num: 0 }])
-  }
+    setStocks([...stocks, { symbol: "", allocation: "", num: 0 }]);
+  };
 
   const removeStock = (index) => {
-    const updatedStocks = [...stocks]
-    updatedStocks.splice(index, 1)
-    setStocks(updatedStocks)
-  }
+    const updatedStocks = [...stocks];
+    updatedStocks.splice(index, 1);
+    setStocks(updatedStocks);
+  };
 
   const fetchHistoricalData = async () => {
-    const apiKey = 'a5a6abfb51c5429da534cca299517fc9'; // Replace with your Twelve Data API key
+    const apiKey = "a5a6abfb51c5429da534cca299517fc9"; // Replace with your Twelve Data API key
     const symbols = stocks.map((stock) => stock.symbol);
     const endDate = new Date().toISOString().slice(0, 10);
     // console.log(startDate)
     // console.log(endDate)
-    
-    const response = await axios.get(
-      'https://api.twelvedata.com/time_series',
-      {
-        params: {
-          symbol: symbols.join(','),
-          interval: '1day',
-          start_date: startDate,
-          end_date: endDate,
-          apikey: apiKey,
-        },
+
+    const response = await axios.get("https://api.twelvedata.com/time_series", {
+      params: {
+        symbol: symbols.join(","),
+        interval: "1day",
+        start_date: startDate,
+        end_date: endDate,
+        apikey: apiKey,
+      },
+    });
+
+    // if the stock ticker isnt a valid one: when only one stock ticker is entered
+    if (
+      response.data.code == 400 &&
+      response.data.message.match(/^\*\*symbol\*\*\ not\ found/)
+    ) {
+      // console.log(response.data.message)
+      setErrorMessage(
+        "The entered stock ticker(s) cannot be found. Please enter a valid stock ticker."
+      );
+      return;
+    }
+    // if the stock ticker isnt a valid one: when multiple stock tickers are entered
+    for (const stockData in response.data) {
+      if (
+        response.data[stockData].code == 400 &&
+        response.data[stockData].message.match(/^\*\*symbol\*\*\ not\ found/)
+      ) {
+        // console.log(response.data[stockData].message)
+        setErrorMessage(
+          `${stockData} is not a valid stock ticker. Please enter a valid stock ticker.`
+        );
+        return;
       }
-    );
-      // response from the above includes stock info, and stock price and dates
+    }
+
+    // response from the above includes stock info, and stock price and dates
     const historicalData = {};
 
     for (const symbol in response.data) {
-      if (symbol !== 'status' && symbol !== 'meta' && symbol !== 'values') {
-        const closeValues = response.data[symbol].values.map(
-          (item) => parseFloat(item.close)
+      if (symbol !== "status" && symbol !== "meta" && symbol !== "values") {
+        const closeValues = response.data[symbol].values.map((item) =>
+          parseFloat(item.close)
         );
         historicalData[symbol] = closeValues;
 
         const dates = response.data[symbol].values.map((item) => item.datetime);
         stockPriceDates[symbol] = dates;
-      }
-      else if(symbol === 'values')
-      {
+      } else if (symbol === "values") {
         const sym = response.data.meta.symbol;
-        const closeValues = response.data.values.map((item) => parseFloat(item.close));
+        const closeValues = response.data.values.map((item) =>
+          parseFloat(item.close)
+        );
         historicalData[sym] = closeValues;
 
-        // parse dates from response and store them in allDates object 
+        // parse dates from response and store them in allDates object
         // in the future, closeValues and allDates could be combined into one object using dates as key and stock price as values to ensure data integrity
         const dates = response.data.values.map((item) => item.datetime);
-        stockPriceDates[sym] = dates
+        stockPriceDates[sym] = dates;
         // console.log(stockPriceDates)
       }
     }
     setHistoricalData(historicalData);
     setStockPriceDates(stockPriceDates);
+    setErrorMessage("");
   };
-  
 
   const calculateCurrentValue = () => {
-    var total = 0
+    var total = 0;
     for (const key in historicalData) {
       const stockData = historicalData[key];
-      const boughtDate = stockData[stockData.length - 1]
-      const latestDate = stockData[0]
-      const allocation = stocks.find((stock) => stock.symbol === key)?.allocation;
-      const stockValue = latestDate * (allocation / 100) * initialBalance / boughtDate;
+      const boughtDate = stockData[stockData.length - 1];
+      const latestDate = stockData[0];
+      const allocation = stocks.find(
+        (stock) => stock.symbol === key
+      )?.allocation;
+      const stockValue =
+        (latestDate * (allocation / 100) * initialBalance) / boughtDate;
 
-      total += stockValue
+      total += stockValue;
     }
-  
+
     return total.toFixed(2);
   };
 
   const handleClear = () => {
     window.location.reload();
   };
-  
+
   // setHistoricalData("Test")
   //   axios.post('http://127.0.0.1:5000/get_stocks', { stocks: stocks, startDate: startDate, endDate: new Date().toISOString().slice(0, 10), balance: initialBalance })
   //   .then(response => {
@@ -169,19 +194,19 @@ const Form = () => {
   //   })
 
   const openModal = () => {
-    if(isValidInputs() === true){
-      setIsOpen(true)
+    if (isValidInputs() === true) {
+      setIsOpen(true);
     } else {
       return null;
     }
-  }
-
+  };
 
   return (
     <div>
       <form
         onSubmit={handleSubmit}
-        className="max-w-md mx-auto p-6 mt-20 bg-white shadow-lg rounded-lg">
+        className="max-w-md mx-auto p-6 mt-20 bg-white shadow-lg rounded-lg"
+      >
         <label className="block mb-4">
           <span className="text-gray-700">Start Date:</span>
           <input
@@ -213,18 +238,19 @@ const Form = () => {
                   type="text"
                   value={stock.symbol}
                   onChange={(e) =>
-                    handleStockChange(index, 'symbol', e.target.value)
+                    handleStockChange(index, "symbol", e.target.value)
                   }
                   required
                   className={`block w-full pr-10 border-gray-300 rounded-md focus:border-blue-300 focus:ring ${
-                    stock.isInvalid ? 'border-red-500' : ''
+                    stock.isInvalid ? "border-red-500" : ""
                   }`}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <span
                     className={`text-sm ${
-                      stock.isInvalid ? 'text-red-500' : 'text-gray-500'
-                    }`}>
+                      stock.isInvalid ? "text-red-500" : "text-gray-500"
+                    }`}
+                  >
                     {stock.symbol.length}/5
                   </span>
                 </div>
@@ -243,7 +269,7 @@ const Form = () => {
                 type="number"
                 value={stock.allocation}
                 onChange={(e) =>
-                  handleStockChange(index, 'allocation', e.target.value)
+                  handleStockChange(index, "allocation", e.target.value)
                 }
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
@@ -254,7 +280,8 @@ const Form = () => {
               <button
                 type="button"
                 onClick={() => removeStock(index)}
-                className="text-red-500 hover:text-red-700 focus:outline-none">
+                className="text-red-500 hover:text-red-700 focus:outline-none"
+              >
                 Remove Stock
               </button>
             )}
@@ -268,41 +295,50 @@ const Form = () => {
           onClick={handleClear}
           className="px-4 py-2 mb-4 mr-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
         >
-           Reset Data 
+          Reset Data
         </button>
-            
+
         <button
           type="button"
           onClick={addStock}
-          className="mb-4 mr-4 text-blue-500 hover:text-blue-700 focus:outline-none">
+          className="mb-4 mr-4 text-blue-500 hover:text-blue-700 focus:outline-none"
+        >
           Add Stock
         </button>
 
         <button
           type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
-          >
+        >
           Calculate
         </button>
 
-        {isOpen ? (<Modal open={isOpen} onClose={()=>setIsOpen(false)}>
-          <Chart 
-            stockPriceDates={stockPriceDates}
-            stocks={stocks}
-            historicalData={historicalData}
-            initialBalance={initialBalance}
-            startDate={startDate}
-            calculateCurrentValue={calculateCurrentValue()}
-            // currentValue={newBalance}
-          />
-        </Modal>) : (<></>)}
-      
-        
-
-        {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : errorMessage ? (
+          <>
+            {errorMessage && (
+              <p className="text-red-500 mt-4">{errorMessage}</p>
+            )}
+          </>
+        ) : isOpen ? (
+          <Modal open={isOpen} onClose={() => setIsOpen(false)}>
+            <Chart
+              stockPriceDates={stockPriceDates}
+              stocks={stocks}
+              historicalData={historicalData}
+              initialBalance={initialBalance}
+              startDate={startDate}
+              calculateCurrentValue={calculateCurrentValue()}
+              // currentValue={newBalance}
+            />
+          </Modal>
+        ) : (
+          <></>
+        )}
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default Form
+export default Form;

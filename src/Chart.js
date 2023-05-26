@@ -2,9 +2,9 @@ import { ResponsiveLineCanvas } from "@nivo/line";
 
 const Chart = (props) => {
   // console.log(props.currentValue);
-  console.log("stockprice", props.stockPriceDates); // object
-  console.log("stocks", props.stocks); // array of objects
-  console.log("historical data", props.historicalData); // object
+  // console.log("stockprice", props.stockPriceDates); // object
+  // console.log("stocks", props.stocks); // array of objects
+  // console.log("historical data", props.historicalData); // object
   // console.log(props.initialBalance); // int
 
   // const initialBalance = 260; // float
@@ -28,7 +28,6 @@ const Chart = (props) => {
   ) {
     return <p>Loading...</p>;
   }
-  // console.log("should be GME", props.stockPriceDates[Object.keys(props.stockPriceDates)[0]].length)
 
   for (let i = 0; i < props.stocks.length; i++) {
     let id = props.stocks[i].symbol;
@@ -57,7 +56,6 @@ const Chart = (props) => {
   // console.log(final_data)
 
   return (
-    // <div>hello</div>
     <div className=" w-[800px] my-5 mx-auto block py-1 bg-white rounded-lg">
       {Object.keys(props.historicalData).length > 0 && (
         <div className="mt-1">
