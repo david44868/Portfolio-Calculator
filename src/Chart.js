@@ -13,7 +13,7 @@ const Chart = ({ calculateCurrentValue, stocks, initialBalance, startDate, histo
     };
   });
 
-  const formatStocks = stocks.map((stock) => `${stock.symbol} (${stock.allocation}%)`).join(", ");
+  const formatStocks = stocks.map((stock) => `${stock.symbol.toUpperCase()} (${stock.allocation}%)`).join(", ");
 
   return (
     <div className="h-[450px] w-[700px] my-5 mx-auto block py-3 bg-white rounded-lg">
@@ -113,4 +113,4 @@ const Chart = ({ calculateCurrentValue, stocks, initialBalance, startDate, histo
   );
 };
 
-export default Chart;
+export default Chart; 
